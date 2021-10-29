@@ -114,7 +114,6 @@ int main(int argc, char** argv)
 
     // Show information
     std::cout << "OpenGL Version:        " << glGetString(GL_VERSION) << "\n"
-              << "GLSL Version:          " << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n"
               << "Renderer:              " << glGetString(GL_RENDERER) << "\n"
               << "Vendor:                " << glGetString(GL_VENDOR) << std::endl;
 
