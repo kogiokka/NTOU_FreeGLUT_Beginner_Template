@@ -100,6 +100,8 @@ static void displayCallback()
 int main(int argc, char** argv)
 {
     // GLUT window initialization
+    glutInitContextVersion(3, 3);
+    glutInitContextProfile(GLUT_COMPATIBILITY_PROFILE);
     glutInit(&argc, argv);
 #ifdef __FREEGLUT_EXT_H__
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
