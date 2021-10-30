@@ -17,7 +17,7 @@ static glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.6f, 0.5f);
 
 static void normalKeyCallback(unsigned char key, int x, int y)
 {
-    // ESC for escape the application.
+    // Press ESC to exit the application.
     if (key == 27)
     {
         glutLeaveMainLoop();
@@ -88,7 +88,7 @@ static void displayCallback()
     glVertex3f(0.8f, -0.8f, 0.0f);
     glEnd();
 
-    // Or u can draw a Utah teapot.
+    // Utah teapot.
     // glutSolidTeapot(0.5);
 
     ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
@@ -129,7 +129,7 @@ int main(int argc, char** argv)
     ImGui_ImplGLUT_InstallFuncs();
     ImGui_ImplOpenGL2_Init();
 
-    // This code must after the call to ImGui_ImplGLUT_InstallFuncs().
+    // This line must be after ImGui_ImplGLUT_InstallFuncs().
     glutKeyboardFunc(normalKeyCallback);
 
     glutMainLoop();
