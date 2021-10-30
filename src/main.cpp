@@ -11,21 +11,21 @@
 #include <iostream>
 
 constexpr unsigned char KEY_ESCAPE = 27;
+constexpr unsigned char KEY_SPACE = 32;
 
 static int width = 1280, height = 720;
 static bool show_demo_window = true;
 static float ortho_fov = 1.0f;
 static glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.6f, 0.5f);
 
-struct ModKey
-{
-    bool L = false;
-    bool R = false;
-} ModKey;
-
 struct SpecialKeys
 {
-    struct ModKey Ctrl, Shift, Alt;
+    struct Mod
+    {
+        bool L = false;
+        bool R = false;
+    };
+    struct Mod Ctrl, Shift, Alt;
 } SpecialKeys;
 
 // Deal with GLUT quirks.
@@ -33,19 +33,16 @@ static unsigned char normalizeKeyCode(unsigned char key)
 {
     const int mod = glutGetModifiers();
 
-    if (mod & GLUT_ACTIVE_CTRL)
+    if (key == 0)
     {
-        return key + 0x60;
+        return KEY_SPACE; // (Ctrl+Space)
     }
-
-    if (mod & GLUT_ACTIVE_SHIFT)
+    if (key >= 1 && key <= 26)
     {
-        return key + 0x20;
-    }
-
-    if (mod & GLUT_ACTIVE_ALT)
-    {
-        return key + 0x0;
+        if (mod & GLUT_ACTIVE_CTRL)
+        {
+            return key + 0x40;
+        }
     }
 
     return key;
@@ -57,103 +54,106 @@ static void keyDown(unsigned char key, int x, int y)
 {
     using namespace std;
 
+    enum
+    {
+        None = 0,
+        Ctrl = 1,
+        Shift = 2,
+        Alt = 4,
+    };
+
     // C++17 feature: Structured Binding Declaration
     const auto& [Ctrl_L, Ctrl_R] = SpecialKeys.Ctrl;
     const auto& [Shift_L, Shift_R] = SpecialKeys.Shift;
     const auto& [Alt_L, Alt_R] = SpecialKeys.Alt;
 
-    enum
-    {
-        None = 0x00,
-        Ctrl = 0x01,
-        Shift = 0x02,
-        Alt = 0x04,
-    };
-
     int mod = None;
-    if (Ctrl_L || Ctrl_R)
-    {
-        mod += Ctrl;
-    }
-    if (Shift_L || Shift_R)
-    {
-        mod += Shift;
-    }
-    if (Alt_L || Alt_R)
-    {
-        mod += Alt;
-    }
+    mod |= (Ctrl_L || Ctrl_R) ? Ctrl : 0;
+    mod |= (Shift_L || Shift_R) ? Shift : 0;
+    mod |= (Alt_L || Alt_R) ? Alt : 0;
 
-    if (mod != None)
+    key = normalizeKeyCode(key);
+    if (mod == None)
     {
-        key = normalizeKeyCode(key);
-    }
-
-    switch (key)
-    {
-        case 'S':
+        switch (key)
         {
-            cout << "[Key] S (Uppercase wihtout Shift, Caps Lock)" << endl;
-            break;
-        }
-        case 's':
-        {
-            if (None == mod)
-            {
-                cout << "[Key] s" << endl;
-            }
-            if (Ctrl == mod)
-            {
-                cout << "[Key] Ctrl+S" << endl;
-            }
-            if (Shift == mod)
-            {
-                cout << "[Key] Shift+S" << endl;
-            }
-            if (Ctrl + Alt == mod)
-            {
-                cout << "[Key] Ctrl+Alt+S" << endl;
-            }
-            break;
-        }
-        case 'Q':
-        {
-            cout << "[Key] Q (Uppercase wihtout Shift, Caps Lock)" << endl;
-            break;
-        }
-        case 'q':
-        {
-            if (None == mod)
-            {
-                cout << "[key] q" << endl;
-            }
-            if (Ctrl + Shift == mod)
-            {
-                cout << "[Key] Ctrl+Shift+Q" << endl;
-            }
-            if (Ctrl == mod)
-            {
-                cout << "[Key] Ctrl+Q" << endl;
-                glutLeaveMainLoop();
-            }
-            if (Shift == mod)
-            {
-                cout << "[Key] Shift+Q" << endl;
-            }
-            break;
-        }
-        case KEY_ESCAPE:
-        {
-            if (None == mod)
-            {
+            case 's': cout << "[Key] s" << endl; break;
+            case 'S': cout << "[Key] S (Caps Lock)" << endl; break;
+            case 'q': cout << "[Key] q" << endl; break;
+            case 'Q': cout << "[Key] Q (Caps Lock)" << endl; break;
+            case KEY_SPACE: cout << "[Key] Space" << endl; break;
+            case KEY_ESCAPE:
                 cout << "[Key] ESC" << endl;
                 glutLeaveMainLoop();
-            }
-            if (Shift == mod)
+                break;
+            default: break;
+        }
+    }
+    else
+    {
+        switch (key)
+        {
+            case 'S':
+            case 's':
             {
-                cout << "[Key] Shift+ESC" << endl;
+                if (mod == Ctrl)
+                {
+                    cout << "[Key] Ctrl+S" << endl;
+                }
+                if (mod == Shift)
+                {
+                    cout << "[Key] Shift+S" << endl;
+                }
+                if (mod == Ctrl + Alt)
+                {
+                    cout << "[Key] Ctrl+Alt+S" << endl;
+                }
+                break;
             }
-            break;
+            case 'Q':
+            case 'q':
+            {
+                if (mod == Ctrl + Shift)
+                {
+                    cout << "[Key] Ctrl+Shift+Q" << endl;
+                }
+                if (mod == Ctrl)
+                {
+                    cout << "[Key] Ctrl+Q" << endl;
+                    glutLeaveMainLoop();
+                }
+                if (mod == Shift)
+                {
+                    cout << "[Key] Shift+Q" << endl;
+                }
+                break;
+            }
+            case '\\':
+                if (mod == Ctrl) {
+                    cout << "[Key] Ctrl + \\" << endl;
+                }
+                break;
+            case KEY_ESCAPE:
+            {
+                if (mod == Shift)
+                {
+                    cout << "[Key] Shift+ESC" << endl;
+                }
+                break;
+            }
+            case KEY_SPACE:
+            {
+                if (mod == Shift)
+                {
+                    cout << "[Key] Shift+Space" << endl;
+                }
+                if (mod == Ctrl)
+                {
+                    cout << "[Key] Ctrl+Space" << endl;
+                }
+                break;
+            }
+            default: break;
         }
     }
 
@@ -164,14 +164,29 @@ static void specialKeyUp(int key, int x, int y)
 {
     // C++17 feature: Structured Binding Declaration
     auto& [Ctrl, Shift, Alt] = SpecialKeys;
-    switch (key)
+    if (key == GLUT_KEY_CTRL_L)
     {
-        case GLUT_KEY_CTRL_L: Ctrl.L = false; break;
-        case GLUT_KEY_CTRL_R: Ctrl.R = false; break;
-        case GLUT_KEY_SHIFT_L: Shift.L = false; break;
-        case GLUT_KEY_SHIFT_R: Shift.R = false; break;
-        case GLUT_KEY_ALT_L: Alt.L = false; break;
-        case GLUT_KEY_ALT_R: Alt.R = false; break;
+        Ctrl.L = false;
+    }
+    if (key == GLUT_KEY_CTRL_R)
+    {
+        Ctrl.R = false;
+    }
+    if (key == GLUT_KEY_SHIFT_L)
+    {
+        Shift.L = false;
+    }
+    if (key == GLUT_KEY_SHIFT_R)
+    {
+        Shift.R = false;
+    }
+    if (key == GLUT_KEY_ALT_L)
+    {
+        Alt.L = false;
+    }
+    if (key == GLUT_KEY_ALT_R)
+    {
+        Alt.R = false;
     }
 }
 
@@ -179,14 +194,30 @@ static void specialKeyDown(int key, int x, int y)
 {
     // C++17 feature: Structured Binding Declaration
     auto& [Ctrl, Shift, Alt] = SpecialKeys;
-    switch (key)
+
+    if (key == GLUT_KEY_CTRL_L)
     {
-        case GLUT_KEY_CTRL_L: Ctrl.L = true; break;
-        case GLUT_KEY_CTRL_R: Ctrl.R = true; break;
-        case GLUT_KEY_SHIFT_L: Shift.L = true; break;
-        case GLUT_KEY_SHIFT_R: Shift.R = true; break;
-        case GLUT_KEY_ALT_L: Alt.L = true; break;
-        case GLUT_KEY_ALT_R: Alt.R = true; break;
+        Ctrl.L = true;
+    }
+    if (key == GLUT_KEY_CTRL_R)
+    {
+        Ctrl.R = true;
+    }
+    if (key == GLUT_KEY_SHIFT_L)
+    {
+        Shift.L = true;
+    }
+    if (key == GLUT_KEY_SHIFT_R)
+    {
+        Shift.R = true;
+    }
+    if (key == GLUT_KEY_ALT_L)
+    {
+        Alt.L = true;
+    }
+    if (key == GLUT_KEY_ALT_R)
+    {
+        Alt.R = true;
     }
 }
 
