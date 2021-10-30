@@ -10,20 +10,184 @@
 
 #include <iostream>
 
+constexpr unsigned char KEY_ESCAPE = 27;
+
 static int width = 1280, height = 720;
 static bool show_demo_window = true;
 static float ortho_fov = 1.0f;
 static glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.6f, 0.5f);
 
-static void normalKeyCallback(unsigned char key, int x, int y)
+struct ModKey
 {
-    // Press ESC to exit the application.
-    if (key == 27)
+    bool L = false;
+    bool R = false;
+} ModKey;
+
+struct SpecialKeys
+{
+    struct ModKey Ctrl, Shift, Alt;
+} SpecialKeys;
+
+// Deal with GLUT quirks.
+static unsigned char normalizeKeyCode(unsigned char key)
+{
+    const int mod = glutGetModifiers();
+
+    if (mod & GLUT_ACTIVE_CTRL)
     {
-        glutLeaveMainLoop();
+        return key + 0x60;
+    }
+
+    if (mod & GLUT_ACTIVE_SHIFT)
+    {
+        return key + 0x20;
+    }
+
+    if (mod & GLUT_ACTIVE_ALT)
+    {
+        return key + 0x0;
+    }
+
+    return key;
+}
+
+static void keyUp(unsigned char key, int x, int y) { }
+
+static void keyDown(unsigned char key, int x, int y)
+{
+    using namespace std;
+
+    // C++17 feature: Structured Binding Declaration
+    const auto& [Ctrl_L, Ctrl_R] = SpecialKeys.Ctrl;
+    const auto& [Shift_L, Shift_R] = SpecialKeys.Shift;
+    const auto& [Alt_L, Alt_R] = SpecialKeys.Alt;
+
+    enum
+    {
+        None = 0x00,
+        Ctrl = 0x01,
+        Shift = 0x02,
+        Alt = 0x04,
+    };
+
+    int mod = None;
+    if (Ctrl_L || Ctrl_R)
+    {
+        mod += Ctrl;
+    }
+    if (Shift_L || Shift_R)
+    {
+        mod += Shift;
+    }
+    if (Alt_L || Alt_R)
+    {
+        mod += Alt;
+    }
+
+    if (mod != None)
+    {
+        key = normalizeKeyCode(key);
+    }
+
+    switch (key)
+    {
+        case 'S':
+        {
+            cout << "[Key] S (Uppercase wihtout Shift, Caps Lock)" << endl;
+            break;
+        }
+        case 's':
+        {
+            if (None == mod)
+            {
+                cout << "[Key] s" << endl;
+            }
+            if (Ctrl == mod)
+            {
+                cout << "[Key] Ctrl+S" << endl;
+            }
+            if (Shift == mod)
+            {
+                cout << "[Key] Shift+S" << endl;
+            }
+            if (Ctrl + Alt == mod)
+            {
+                cout << "[Key] Ctrl+Alt+S" << endl;
+            }
+            break;
+        }
+        case 'Q':
+        {
+            cout << "[Key] Q (Uppercase wihtout Shift, Caps Lock)" << endl;
+            break;
+        }
+        case 'q':
+        {
+            if (None == mod)
+            {
+                cout << "[key] q" << endl;
+            }
+            if (Ctrl + Shift == mod)
+            {
+                cout << "[Key] Ctrl+Shift+Q" << endl;
+            }
+            if (Ctrl == mod)
+            {
+                cout << "[Key] Ctrl+Q" << endl;
+                glutLeaveMainLoop();
+            }
+            if (Shift == mod)
+            {
+                cout << "[Key] Shift+Q" << endl;
+            }
+            break;
+        }
+        case KEY_ESCAPE:
+        {
+            if (None == mod)
+            {
+                cout << "[Key] ESC" << endl;
+                glutLeaveMainLoop();
+            }
+            if (Shift == mod)
+            {
+                cout << "[Key] Shift+ESC" << endl;
+            }
+            break;
+        }
     }
 
     ImGui_ImplGLUT_KeyboardFunc(key, x, y);
+}
+
+static void specialKeyUp(int key, int x, int y)
+{
+    // C++17 feature: Structured Binding Declaration
+    auto& [Ctrl, Shift, Alt] = SpecialKeys;
+    switch (key)
+    {
+        case GLUT_KEY_CTRL_L: Ctrl.L = false; break;
+        case GLUT_KEY_CTRL_R: Ctrl.R = false; break;
+        case GLUT_KEY_SHIFT_L: Shift.L = false; break;
+        case GLUT_KEY_SHIFT_R: Shift.R = false; break;
+        case GLUT_KEY_ALT_L: Alt.L = false; break;
+        case GLUT_KEY_ALT_R: Alt.R = false; break;
+    }
+}
+
+static void specialKeyDown(int key, int x, int y)
+{
+    // C++17 feature: Structured Binding Declaration
+    auto& [Ctrl, Shift, Alt] = SpecialKeys;
+    switch (key)
+    {
+        case GLUT_KEY_CTRL_L: Ctrl.L = true; break;
+        case GLUT_KEY_CTRL_R: Ctrl.R = true; break;
+        case GLUT_KEY_SHIFT_L: Shift.L = true; break;
+        case GLUT_KEY_SHIFT_R: Shift.R = true; break;
+        case GLUT_KEY_ALT_L: Alt.L = true; break;
+        case GLUT_KEY_ALT_R: Alt.R = true; break;
+    }
 }
 
 static void reshape(int w, int h)
@@ -130,7 +294,11 @@ int main(int argc, char** argv)
     ImGui_ImplOpenGL2_Init();
 
     // This line must be after ImGui_ImplGLUT_InstallFuncs().
-    glutKeyboardFunc(normalKeyCallback);
+    // glutSetKeyRepeat(GLUT_KEY_REPEAT_OFF);
+    glutKeyboardFunc(keyDown);
+    glutKeyboardUpFunc(keyUp);
+    glutSpecialFunc(specialKeyDown);
+    glutSpecialUpFunc(specialKeyUp);
 
     glutMainLoop();
 
