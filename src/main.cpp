@@ -273,8 +273,7 @@ static void displayCallback()
 
     // Rendering Imgui
     ImGui::Render();
-    ImGuiIO& io = ImGui::GetIO();
-    reshape(static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y));
+    reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 
     // Clear screen
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
