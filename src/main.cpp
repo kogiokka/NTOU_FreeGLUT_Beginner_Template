@@ -10,8 +10,8 @@
 
 #include <iostream>
 
-constexpr unsigned char KEY_ESCAPE = 27;
-constexpr unsigned char KEY_SPACE = 32;
+constexpr unsigned char Key_Escape = 27;
+constexpr unsigned char Key_Space = 32;
 
 static int width = 1280, height = 720;
 static bool show_demo_window = true;
@@ -29,13 +29,13 @@ struct SpecialKeys
 } SpecialKeys;
 
 // Deal with GLUT quirks.
-static unsigned char normalizeKeyCode(unsigned char key)
+static unsigned char getRealKeyCode(unsigned char key)
 {
     const int mod = glutGetModifiers();
 
     if (key == 0)
     {
-        return KEY_SPACE; // (Ctrl+Space)
+        return Key_Space; // Ctrl+Space appears to be 0
     }
     if (key >= 1 && key <= 26)
     {
@@ -72,7 +72,7 @@ static void keyDown(unsigned char key, int x, int y)
     mod |= (Shift_L || Shift_R) ? Shift : 0;
     mod |= (Alt_L || Alt_R) ? Alt : 0;
 
-    key = normalizeKeyCode(key);
+    key = getRealKeyCode(key);
     if (mod == None)
     {
         switch (key)
@@ -81,11 +81,14 @@ static void keyDown(unsigned char key, int x, int y)
             case 'S': cout << "[Key] S (Caps Lock)" << endl; break;
             case 'q': cout << "[Key] q" << endl; break;
             case 'Q': cout << "[Key] Q (Caps Lock)" << endl; break;
-            case KEY_SPACE: cout << "[Key] Space" << endl; break;
-            case KEY_ESCAPE:
+            case '\\': cout << "[Key] \\" << endl; break;
+            case Key_Space: cout << "[Key] Space" << endl; break;
+            case Key_Escape:
+            {
                 cout << "[Key] ESC" << endl;
                 glutLeaveMainLoop();
-                break;
+            }
+            break;
             default: break;
         }
     }
@@ -129,19 +132,12 @@ static void keyDown(unsigned char key, int x, int y)
                 break;
             }
             case '\\':
-                if (mod == Ctrl) {
+                if (mod == Ctrl)
+                {
                     cout << "[Key] Ctrl + \\" << endl;
                 }
                 break;
-            case KEY_ESCAPE:
-            {
-                if (mod == Shift)
-                {
-                    cout << "[Key] Shift+ESC" << endl;
-                }
-                break;
-            }
-            case KEY_SPACE:
+            case Key_Space:
             {
                 if (mod == Shift)
                 {
