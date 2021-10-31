@@ -48,7 +48,11 @@ static unsigned char getRealKeyCode(unsigned char key)
     return key;
 }
 
-static void keyUp(unsigned char key, int x, int y) { ImGui_ImplGLUT_KeyboardUpFunc(key, x, y); }
+static void keyUp(unsigned char key, int x, int y)
+{
+    // Pass the event to ImGui's callback.
+    ImGui_ImplGLUT_KeyboardUpFunc(key, x, y);
+}
 
 static void keyDown(unsigned char key, int x, int y)
 {
@@ -153,6 +157,7 @@ static void keyDown(unsigned char key, int x, int y)
         }
     }
 
+    // Pass the event to ImGui's callback.
     ImGui_ImplGLUT_KeyboardFunc(key, x, y);
 }
 
@@ -184,6 +189,8 @@ static void specialKeyUp(int key, int x, int y)
     {
         Alt.R = false;
     }
+
+    // Pass the event to ImGui's callback.
     ImGui_ImplGLUT_SpecialUpFunc(key, x, y);
 }
 
@@ -216,6 +223,8 @@ static void specialKeyDown(int key, int x, int y)
     {
         Alt.R = true;
     }
+
+    // Pass the event to ImGui's callback.
     ImGui_ImplGLUT_SpecialFunc(key, x, y);
 }
 
@@ -296,6 +305,7 @@ int main(int argc, char** argv)
     glutInitContextVersion(3, 3);
     glutInitContextProfile(GLUT_COMPATIBILITY_PROFILE);
     glutInit(&argc, argv);
+
 #ifdef __FREEGLUT_EXT_H__
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 #endif
@@ -319,10 +329,11 @@ int main(int argc, char** argv)
 
     // Setup Platform/Renderer backends
     ImGui_ImplGLUT_Init();
-    ImGui_ImplGLUT_InstallFuncs();
     ImGui_ImplOpenGL2_Init();
 
-    // This line must be after ImGui_ImplGLUT_InstallFuncs().
+    ImGui_ImplGLUT_InstallFuncs();
+
+    // Self-defined callbacks must be after ImGui_ImplGLUT_InstallFuncs().
     // glutSetKeyRepeat(GLUT_KEY_REPEAT_OFF);
     glutKeyboardFunc(keyDown);
     glutKeyboardUpFunc(keyUp);
