@@ -52,10 +52,15 @@ static void keyUp(unsigned char key, int x, int y)
 {
     // Pass the event to ImGui's callback.
     ImGui_ImplGLUT_KeyboardUpFunc(key, x, y);
+    if (ImGui::GetIO().WantCaptureKeyboard) return;
 }
 
 static void keyDown(unsigned char key, int x, int y)
 {
+    // Pass the event to ImGui's callback.
+    ImGui_ImplGLUT_KeyboardFunc(key, x, y);
+    if (ImGui::GetIO().WantCaptureKeyboard) return;
+
     using namespace std;
 
     enum
@@ -156,13 +161,14 @@ static void keyDown(unsigned char key, int x, int y)
             default: break;
         }
     }
-
-    // Pass the event to ImGui's callback.
-    ImGui_ImplGLUT_KeyboardFunc(key, x, y);
 }
 
 static void specialKeyUp(int key, int x, int y)
 {
+    // Pass the event to ImGui's callback.
+    ImGui_ImplGLUT_SpecialUpFunc(key, x, y);
+    if (ImGui::GetIO().WantCaptureKeyboard) return;
+
     // C++17 feature: Structured Binding Declaration
     auto& [Ctrl, Shift, Alt] = SpecialKeys;
     if (key == GLUT_KEY_CTRL_L)
@@ -189,13 +195,14 @@ static void specialKeyUp(int key, int x, int y)
     {
         Alt.R = false;
     }
-
-    // Pass the event to ImGui's callback.
-    ImGui_ImplGLUT_SpecialUpFunc(key, x, y);
 }
 
 static void specialKeyDown(int key, int x, int y)
 {
+    // Pass the event to ImGui's callback.
+    ImGui_ImplGLUT_SpecialFunc(key, x, y);
+    if (ImGui::GetIO().WantCaptureKeyboard) return;
+
     // C++17 feature: Structured Binding Declaration
     auto& [Ctrl, Shift, Alt] = SpecialKeys;
 
@@ -223,9 +230,6 @@ static void specialKeyDown(int key, int x, int y)
     {
         Alt.R = true;
     }
-
-    // Pass the event to ImGui's callback.
-    ImGui_ImplGLUT_SpecialFunc(key, x, y);
 }
 
 static void reshape(int w, int h)
