@@ -48,7 +48,7 @@ static unsigned char getRealKeyCode(unsigned char key)
     return key;
 }
 
-static void keyUp(unsigned char key, int x, int y) { }
+static void keyUp(unsigned char key, int x, int y) { ImGui_ImplGLUT_KeyboardUpFunc(key, x, y); }
 
 static void keyDown(unsigned char key, int x, int y)
 {
@@ -184,6 +184,7 @@ static void specialKeyUp(int key, int x, int y)
     {
         Alt.R = false;
     }
+    ImGui_ImplGLUT_SpecialUpFunc(key, x, y);
 }
 
 static void specialKeyDown(int key, int x, int y)
@@ -215,6 +216,7 @@ static void specialKeyDown(int key, int x, int y)
     {
         Alt.R = true;
     }
+    ImGui_ImplGLUT_SpecialFunc(key, x, y);
 }
 
 static void reshape(int w, int h)
