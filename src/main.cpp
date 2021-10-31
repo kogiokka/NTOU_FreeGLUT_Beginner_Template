@@ -37,7 +37,7 @@ static unsigned char getRealKeyCode(unsigned char key)
     {
         return Key_Space; // Ctrl+Space appears to be 0
     }
-    if (key >= 1 && key <= 26)
+    if (key >= 1 && key <= 30)
     {
         if (mod & GLUT_ACTIVE_CTRL)
         {
