@@ -8,39 +8,59 @@ project("NTOU FreeGLUT Beginner Template"
 
 
 # Create Binary Target #########################################################
-add_executable(my-exe-target)
+add_executable(glut-example)
 
 
 # Compiler Settings ############################################################
 ## Require C++17.
-target_compile_features(my-exe-target PRIVATE cxx_std_17)
+target_compile_features(glut-example PRIVATE cxx_std_17)
 
 ## Change the properties of our executable target.
-set_target_properties(my-exe-target PROPERTIES
-    # Set executable name
-    OUTPUT_NAME "glut-example"
-    # Turn off compiler extensions for portability
+set_target_properties(glut-example PROPERTIES
+    # Turn off compiler extensions for cross-platform portability
     C_EXTENSIONS   OFF
     CXX_EXTENSIONS OFF
 )
 
-## Extra Debug and Release Settings
+## Compiler flags for different compilers and different build configurations.
 if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    list(APPEND CompilerFlags -Wall -Wextra --pedantic-errors)
-    list(APPEND CompilerFlags_Debug -ggdb)
-    list(APPEND CompilerFlags_Release)
+    list(APPEND CompileOptions "-Wall" "-Wextra" --pedantic-errors)
+    list(APPEND CompileOptions_Debug -ggdb)
+    list(APPEND CompileOptions_Release)
+    target_compile_definitions(glut-example PRIVATE $<$<CONFIG:Debug>:_GLIBCXX_DEBUG>)
 elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
-    list(APPEND CompilerFlags -Wall -Wextra --pedantic-errors)
-    list(APPEND CompilerFlags_Release)
+    list(APPEND CompileOptions -Wall -Wextra --pedantic-errors)
+    list(APPEND CompileOptions_Debug)
+    list(APPEND CompileOptions_Release)
 elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
-    list(APPEND CompilerFlags /W4)
-    list(APPEND CompilerFlags_Debug)
-    list(APPEND CompilerFlags_Release)
+    list(APPEND CompileOptions /W4)
+    list(APPEND CompileOptions_Debug)
+    list(APPEND CompileOptions_Release)
 endif()
 
-target_compile_options(my-exe-target PRIVATE "${CompilerFlags}")
-target_compile_options(my-exe-target PRIVATE "$<$<CONFIG:Debug>:${CompilerFlags_Debug}>")
-target_compile_options(my-exe-target PRIVATE "$<$<CONFIG:Release>:${CompilerFlags_Release}>")
+## Set the compile options of targets according to the "build configuration".
+#[[
+    $<CONFIG:cfgs>
+        1 if config is any one of the entries in comma-separated list cfgs.
+
+    $<CONFIG:Debug>
+        Evaluates to 1 if the build configuration is "Debug", or else it evaluates to 0.
+
+    $<CONFIG:Release>
+        Evaluates to 1 if the build configuration is "Release", or else it evaluates to 0.
+
+    $<$<CONFIG:Debug>:"Debug Mode">
+        Expands to "Debug Mode" when the "Debug" configuration is used, or else expands to an empty string.
+
+    $<$<CONFIG:Release>:"Release Mode">
+        Expands to "Release Mode" when the "Release" configuration is used, or else expands to an empty string.
+
+    See details about generator-expressions at
+        https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html
+]]
+target_compile_options(glut-example PRIVATE "${CompileOptions}")
+target_compile_options(glut-example PRIVATE "$<$<CONFIG:Debug>:${CompileOptions_Debug}>")
+target_compile_options(glut-example PRIVATE "$<$<CONFIG:Release>:${CompileOptions_Release}>")
 
 
 # Build Information ############################################################
@@ -80,15 +100,15 @@ find_package(glm REQUIRED)
 
 # Source Files #################################################################
 ## Collect source files and assign them to a variable
-file(GLOB MySourceFiles CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB My_Source CONFIGURE_DEPENDS "src/*.cpp")
 
 ## Assign source files to the executable target.
-target_sources(my-exe-target PRIVATE ${MySourceFiles})
+target_sources(glut-example PRIVATE ${My_Source})
 
 
 # Link the Libraries ###########################################################
 ## Link the external libraries
-target_link_libraries(my-exe-target PRIVATE
+target_link_libraries(glut-example PRIVATE
     OpenGL::GL
     OpenGL::GLU
     GLUT::GLUT
@@ -97,7 +117,7 @@ target_link_libraries(my-exe-target PRIVATE
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(my-exe-target PRIVATE X11)
+    target_link_libraries(glut-example PRIVATE X11)
 endif()
 
 
